@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        table, th, tr, td {
+            border: 1px solid lightgray;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 4px;
+        }
+        th {
+            background-color: darkblue;
+            color: white;
+            border: darkblue;
+        }
+        tr:nth-child(even) {
+            background: antiquewhite;
+        }
+    </style>
+</head>
+<body>
+   
+    <table id="tasksTable">
+        
+    </table>
+    <p>
+        <input placeholder="oppgave" id="taskDescription" type="text"/>
+        <input placeholder="navn" id="taskPersonName" type="text"/>
+        <input placeholder="date" id="taskDate" type="date"/><br/><br/>
+        <button onclick="addTask()">Legg til Oppgave, Navn og Frist</button>
+    </p>
+    <script>
+        let tasks = [
+            {description: 'Handle til middag', isDone: true, personName: 'Terje', frist: '2024/01/20', gjortdato: '2024/02/13'},
+            {description: 'Lage middag', isDone: false, personName: 'Linn', frist: '2024/02/21', gjortdato: ''},
+            {description: 'Spise middag', isDone: false, personName: 'Benjamin', frist: '2024/03/23', gjortdato: ''},
+        ];
+        let tasksTable = document.getElementById('tasksTable');
+       
+        let taskDescriptionInput = getElement('taskDescription'); 
+        let taskPersonNameInput = getElement('taskPersonName'); 
+        let taskfristInput = getElement('taskDate'); 
+
+        function addTask(){
+            if(taskDescriptionInput.value != '' && taskPersonNameInput.value != '' & taskfristInput.value != '') {tasks.push({
+                description: taskDescriptionInput.value,
+                isDone: false,
+                personName: taskPersonNameInput.value,
+                frist: new Date(taskfristInput.value).toISOString().substring(0,10),
+                gjortdato: ''
+            })}
+            taskDescriptionInput.value='';
+            taskPersonNameInput.value = '';
+            taskfristInput.value = '';
+            show();
+        }
+
+        show();
+        function show(){
+            let html = /*html*/`
+                <tr>
+                    <th>Oppgave</th>
+                    <th>Gjort</th>
+                    <th>Person Navn</th>
+                    <th>Frist</th>
+                    <th>Gjort Dato</th>
+                    <th></th>
+                </tr>`;
+
+            for (let i =0; i<tasks.length; i++) {
+                html += createHtml(i);
+                
+        }
+        tasksTable.innerHTML= html;
+        }
+        function createHtml(i){
+                let task = tasks[i];
+                let checkedHtml = task.isDone ? 'checked' : '';
+                // let myDate = new Date(task.frist);
+                // myDate = myDate.toISOString().substr(0,10);
+             if(!task.editMode) return `    
+                <tr>
+                    <td>${task.description}</td>
+                    <td><input onchange="changeIsDone(this, ${i})" type="checkbox" ${checkedHtml} /></td>
+                    <td>${task.personName}</td>
+                    <td>${task.frist}</td>
+                    <td>${task.gjortdato}</td>
+                    <td><button onclick="deleteItem(${i})">Slett</button>
+                        <button onclick="editItem(${i})">Edit</button>
+                    </td>
+                </tr>
+     
+            `;
+            return `    
+                <tr>
+                    <td><input id="editDescription${i}" type="text" value="${task.description}"/></td>
+                    <td><input onchange="changeIsDone(this, ${i})" type="checkbox" ${checkedHtml} /></td>
+                    <td><input id="editName${i}" type="text" value="${task.personName}"/></td>
+                    <td><input id="editDate${i}" type="date" value="${new Date(task.frist)}"/></td>
+                    <td>
+                        <button onclick="updateItem(${i})">Save</button>
+                    </td>
+                </tr>
+     
+            `;
+
+        }
+        function changeIsDone(element, index){
+            tasks[index].isDone = element.checked;
+            if (element.checked) {tasks[index].gjortdato = new Date().toISOString().substring(0,10);}
+            else tasks[index].gjortdato = '';
+            console.log(element.checked);
+            show();
+
+        }
+        function deleteItem(index){
+            tasks.splice(index,1);
+            show();
+        }
+        function editItem(index){
+            tasks[index].editMode = true;
+            show();
+        }
+        function updateItem(index){
+            const id1 = `editDescription${index}`;
+            const id2 = `editName${index}`;
+            const id3 = `editDate${index}`;
+            const descriptionInputTag = document.getElementById(id1);
+            const nameInputTag = document.getElementById(id2);
+            const dateInputTag = document.getElementById(id3);
+            tasks[index].description = descriptionInputTag.value;
+            tasks[index].personName = nameInputTag.value;
+            tasks[index].frist = new Date(dateInputTag.value).toISOString().substring(0,10);
+            tasks[index].editMode = false;
+            show();
+        }
+        function getElement(idName){
+            return document.getElementById(idName);
+        }
+    </script>
+</body>
+</html>
